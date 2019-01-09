@@ -138,12 +138,12 @@ public class ExtensionManager {
             final boolean isProcessor = Processor.class.equals(entry.getKey());
             final boolean isReportingTask = ReportingTask.class.equals(entry.getKey());
 
-            final ServiceLoader<?> serviceLoader = ServiceLoader.load(entry.getKey(), bundle.getClassLoader());
-            for (final Object o : serviceLoader) {
+            final ServiceLoader<?> serviceLoader = ServiceLoader.load(entry.getKey(), bundle.getClassLoader());//获取所有子类
+            for (final Object o : serviceLoader) {//实例化每个子类
                 // create a cache of temp ConfigurableComponent instances, the initialize here has to happen before the checks below
                 if ((isControllerService || isProcessor || isReportingTask) && o instanceof ConfigurableComponent) {
                     final ConfigurableComponent configurableComponent = (ConfigurableComponent) o;
-                    initializeTempComponent(configurableComponent);
+                    initializeTempComponent(configurableComponent);//调用ProcessorInitializer, ControllerServiceInitializer, ReportingTaskingInitializer的initialize()
 
                     final String cacheKey = getClassBundleKey(o.getClass().getCanonicalName(), bundle.getBundleDetails().getCoordinate());
                     tempComponentLookup.put(cacheKey, (ConfigurableComponent)o);
@@ -168,7 +168,7 @@ public class ExtensionManager {
                     }
 
                     if (registerExtension) {
-                        registerServiceClass(o.getClass(), classNameBundleLookup, bundle, entry.getValue());
+                        registerServiceClass(o.getClass(), classNameBundleLookup, bundle, entry.getValue());//registeredBundles.add(bundle);
                     }
                 }
 
@@ -182,7 +182,7 @@ public class ExtensionManager {
         ConfigurableComponentInitializer initializer = null;
         try {
             initializer = ConfigurableComponentInitializerFactory.createComponentInitializer(configurableComponent.getClass());
-            initializer.initialize(configurableComponent);
+            initializer.initialize(configurableComponent);//调用ProcessorInitializer, ControllerServiceInitializer, ReportingTaskingInitializer的initialize()
         } catch (final InitializationException e) {
             logger.warn(String.format("Unable to initialize component %s due to %s", configurableComponent.getClass().getName(), e.getMessage()));
         }

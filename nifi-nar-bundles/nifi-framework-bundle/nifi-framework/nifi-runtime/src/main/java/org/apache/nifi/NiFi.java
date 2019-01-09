@@ -85,7 +85,7 @@ public class NiFi {
             }
         });
 
-        // register the shutdown hook
+        // register the shutdown hook // 当jvm关闭之前会执行此函数再关闭jvm
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -103,7 +103,7 @@ public class NiFi {
                     throw new RuntimeException("Failed to start NiFi because system property '" + BOOTSTRAP_PORT_PROPERTY + "' is not a valid integer in the range 1 - 65535");
                 }
 
-                bootstrapListener = new BootstrapListener(this, port);
+                bootstrapListener = new BootstrapListener(this, port);//服务器socket
                 bootstrapListener.start();
             } catch (final NumberFormatException nfe) {
                 throw new RuntimeException("Failed to start NiFi because system property '" + BOOTSTRAP_PORT_PROPERTY + "' is not a valid integer in the range 1 - 65535");
@@ -120,24 +120,24 @@ public class NiFi {
         // war every time the application starts.
         File webWorkingDir = properties.getWebWorkingDirectory();
         FileUtils.deleteFilesInDirectory(webWorkingDir, null, LOGGER, true, true);
-        FileUtils.deleteFile(webWorkingDir, LOGGER, 3);
+        FileUtils.deleteFile(webWorkingDir, LOGGER, 3);//好像需要把flow.xml.gz备份一遍
 
         detectTimingIssues();
 
-        // redirect JUL log events
+        // redirect JUL log events 删除java本身的log工具
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
         final Bundle systemBundle = SystemBundle.create(properties);
 
-        // expand the nars
-        final ExtensionMapping extensionMapping = NarUnpacker.unpackNars(properties, systemBundle);
+        // expand the nars， 校验framwwork api是否存在
+        final ExtensionMapping extensionMapping = NarUnpacker.unpackNars(properties, systemBundle); // 静态类NarUnpacker，加载要花很久
 
         // load the extensions classloaders
         NarClassLoaders.getInstance().init(properties.getFrameworkWorkingDirectory(), properties.getExtensionsWorkingDirectory());
 
         // load the framework classloader
-        final ClassLoader frameworkClassLoader = NarClassLoaders.getInstance().getFrameworkBundle().getClassLoader();
+        final ClassLoader frameworkClassLoader = NarClassLoaders.getInstance().getFrameworkBundle().getClassLoader();//getInstance是单例模式
         if (frameworkClassLoader == null) {
             throw new IllegalStateException("Unable to find the framework NAR ClassLoader.");
         }
@@ -147,17 +147,17 @@ public class NiFi {
         // load the server from the framework classloader
         Thread.currentThread().setContextClassLoader(frameworkClassLoader);
         Class<?> jettyServer = Class.forName("org.apache.nifi.web.server.JettyServer", true, frameworkClassLoader);
-        Constructor<?> jettyConstructor = jettyServer.getConstructor(NiFiProperties.class, Set.class);
+        Constructor<?> jettyConstructor = jettyServer.getConstructor(NiFiProperties.class, Set.class);//获取有参构造器
 
         final long startTime = System.nanoTime();
-        nifiServer = (NiFiServer) jettyConstructor.newInstance(properties, narBundles);
+        nifiServer = (NiFiServer) jettyConstructor.newInstance(properties, narBundles);//调用有参构造器，等价于 nifiServer = new JettyServer(properties, narBundles)
         nifiServer.setExtensionMapping(extensionMapping);
         nifiServer.setBundles(systemBundle, narBundles);
 
         if (shutdown) {
             LOGGER.info("NiFi has been shutdown via NiFi Bootstrap. Will not start Controller");
         } else {
-            nifiServer.start();
+            nifiServer.start();//启动了Event-Driven Process Thread和Timer-driven Process Thread等
 
             if (bootstrapListener != null) {
                 bootstrapListener.sendStartedStatus(true);
@@ -236,7 +236,7 @@ public class NiFi {
             }
         };
 
-        final ScheduledFuture<?> future = service.scheduleWithFixedDelay(command, 2000L, 2000L, TimeUnit.MILLISECONDS);
+        final ScheduledFuture<?> future = service.scheduleWithFixedDelay(command, 2000L, 2000L, TimeUnit.MILLISECONDS);//2s跑一次
 
         final TimerTask timerTask = new TimerTask() {
             @Override
@@ -262,8 +262,8 @@ public class NiFi {
     public static void main(String[] args) {
         LOGGER.info("Launching NiFi...");
         try {
-            final ClassLoader bootstrap = createBootstrapClassLoader();
-            NiFiProperties properties = initializeProperties(args, bootstrap);
+            final ClassLoader bootstrap = createBootstrapClassLoader();// 加载./lib/bootstrap下的jar
+            NiFiProperties properties = initializeProperties(args, bootstrap);//conf/bootstrap.conf中的属性
             properties.validate();
             new NiFi(properties);
         } catch (final Throwable t) {

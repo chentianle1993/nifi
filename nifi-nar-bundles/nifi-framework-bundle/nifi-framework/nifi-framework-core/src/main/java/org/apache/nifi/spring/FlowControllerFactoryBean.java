@@ -53,11 +53,11 @@ public class FlowControllerFactoryBean implements FactoryBean, ApplicationContex
     @Override
     public Object getObject() throws Exception {
         if (flowController == null) {
-            final FlowFileEventRepository flowFileEventRepository = applicationContext.getBean("flowFileEventRepository", FlowFileEventRepository.class);
+            final FlowFileEventRepository flowFileEventRepository = applicationContext.getBean("flowFileEventRepository", FlowFileEventRepository.class);//RingBufferEventRepositoryBean.getObject()
 
             if (properties.isNode()) {
-                final NodeProtocolSender nodeProtocolSender = applicationContext.getBean("nodeProtocolSender", NodeProtocolSender.class);
-                final HeartbeatMonitor heartbeatMonitor = applicationContext.getBean("heartbeatMonitor", HeartbeatMonitor.class);
+                final NodeProtocolSender nodeProtocolSender = applicationContext.getBean("nodeProtocolSender", NodeProtocolSender.class);//NodeProtocolSenderListener.getObject()
+                final HeartbeatMonitor heartbeatMonitor = applicationContext.getBean("heartbeatMonitor", HeartbeatMonitor.class);//HeartbeatMonitorFactoryBean.getObject()
                 flowController = FlowController.createClusteredInstance(
                     flowFileEventRepository,
                     properties,

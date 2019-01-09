@@ -43,14 +43,14 @@ public class StandardFlowServiceFactoryBean implements FactoryBean, ApplicationC
     private Authorizer authorizer;
 
     @Override
-    public Object getObject() throws Exception {
+    public Object getObject() throws Exception {// <- flowService = ctx.getBean("flowService", FlowService.class)时，由nifi-framework-core/.../nifi-context.xml跳转至此
         if (flowService == null) {
-            final FlowController flowController = applicationContext.getBean("flowController", FlowController.class);
-            final RevisionManager revisionManager = applicationContext.getBean("revisionManager", RevisionManager.class);
+            final FlowController flowController = applicationContext.getBean("flowController", FlowController.class);//FlowControllerFactoryBean.getObject()
+            final RevisionManager revisionManager = applicationContext.getBean("revisionManager", RevisionManager.class);//NaiveRevisionManager.getObject()
 
             if (properties.isNode()) {
-                final NodeProtocolSenderListener nodeProtocolSenderListener = applicationContext.getBean("nodeProtocolSenderListener", NodeProtocolSenderListener.class);
-                final ClusterCoordinator clusterCoordinator = applicationContext.getBean("clusterCoordinator", ClusterCoordinator.class);
+                final NodeProtocolSenderListener nodeProtocolSenderListener = applicationContext.getBean("nodeProtocolSenderListener", NodeProtocolSenderListener.class);//NodeProtocolSenderListener.getObject()
+                final ClusterCoordinator clusterCoordinator = applicationContext.getBean("clusterCoordinator", ClusterCoordinator.class);//NodeClusterCoordinatorFactoryBean.getObject()
                 flowService = StandardFlowService.createClusteredInstance(
                     flowController,
                     properties,

@@ -142,14 +142,14 @@ public class JettyServer implements NiFiServer {
         threadPool.setName("NiFi Web Server");
 
         // create the server
-        this.server = new Server(threadPool);
+        this.server = new Server(threadPool);//org.eclipse.jetty.server.Server
         this.props = props;
 
-        // enable the annotation based configuration to ensure the jsp container is initialized properly
+        // enable the annotation based configuration to ensure the jsp(java servlet container) is initialized properly
         final Configuration.ClassList classlist = Configuration.ClassList.setServerDefault(server);
         classlist.addBefore(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
 
-        // configure server
+        // configure server 配置端口
         configureConnectors(server);
 
         // load wars from the bundle
@@ -203,7 +203,7 @@ public class JettyServer implements NiFiServer {
         final ClassLoader frameworkClassLoader = getClass().getClassLoader();
         final ClassLoader jettyClassLoader = frameworkClassLoader.getParent();
 
-        // deploy the other wars
+        // deploy the other wars 其他war包
         if (CollectionUtils.isNotEmpty(otherWars)) {
             // hold onto to the web contexts for all ui extensions
             componentUiExtensionWebContexts = new ArrayList<>();
@@ -288,17 +288,17 @@ public class JettyServer implements NiFiServer {
             componentUiExtensions = new UiExtensionMapping(Collections.EMPTY_MAP);
         }
 
-        // load the web ui app
+        // 加载 web ui app 到 http://localhost/nifi
         final WebAppContext webUiContext = loadWar(webUiWar, "/nifi", frameworkClassLoader);
         webUiContext.getInitParams().put("oidc-supported", String.valueOf(props.isOidcEnabled()));
         webUiContext.getInitParams().put("knox-supported", String.valueOf(props.isKnoxSsoEnabled()));
         handlers.addHandler(webUiContext);
 
-        // load the web api app
+        // 加载 web api app 到 http://localhost/nifi-api
         webApiContext = loadWar(webApiWar, "/nifi-api", frameworkClassLoader);
         handlers.addHandler(webApiContext);
 
-        // load the content viewer app
+        // 加载 content viewer app 到 http://localhost/nifi-content-viewer
         webContentViewerContext = loadWar(webContentViewerWar, "/nifi-content-viewer", frameworkClassLoader);
         webContentViewerContext.getInitParams().putAll(mimeMappings);
         handlers.addHandler(webContentViewerContext);
@@ -306,10 +306,10 @@ public class JettyServer implements NiFiServer {
         // create a web app for the docs
         final String docsContextPath = "/nifi-docs";
 
-        // load the documentation war
+        // 加载 documentation war
         webDocsContext = loadWar(webDocsWar, docsContextPath, frameworkClassLoader);
 
-        // overlay the actual documentation
+        // overlay the actual documentation 到 http://localhost//nifi-docs
         final ContextHandlerCollection documentationHandlers = new ContextHandlerCollection();
         documentationHandlers.addHandler(createDocsWebApp(docsContextPath));
         documentationHandlers.addHandler(webDocsContext);
@@ -748,14 +748,14 @@ public class JettyServer implements NiFiServer {
     @Override
     public void start() {
         try {
-            ExtensionManager.discoverExtensions(systemBundle, bundles);
+            ExtensionManager.discoverExtensions(systemBundle, bundles);//初始化ControllerService,Processor,ReportingTask的所有子类
             ExtensionManager.logClassLoaderMapping();
 
             DocGenerator.generate(props, extensionMapping);
 
-            // start the server
-            server.start();
-
+            // start the server 启动了FlowEngine
+            server.start();//跳转到org.eclipse.jetty.server.Server, 启动了Event-Driven Process Thread和Timer-driven Process Thread等
+            //启动webapp
             // ensure everything started successfully
             for (Handler handler : server.getChildHandlers()) {
                 // see if the handler is a web app
@@ -772,7 +772,7 @@ public class JettyServer implements NiFiServer {
 
             // ensure the appropriate wars deployed successfully before injecting the NiFi context and security filters
             // this must be done after starting the server (and ensuring there were no start up failures)
-            if (webApiContext != null) {
+            if (webApiContext != null) {//request，一个用户可有多个；session，一个用户一个；servletContext，所有用户共用一个
                 // give the web api the component ui extensions
                 final ServletContext webApiServletContext = webApiContext.getServletHandler().getServletContext();
                 webApiServletContext.setAttribute("nifi-ui-extensions", componentUiExtensions);
@@ -783,7 +783,7 @@ public class JettyServer implements NiFiServer {
                 // component ui extensions
                 if (CollectionUtils.isNotEmpty(componentUiExtensionWebContexts)) {
                     final NiFiWebConfigurationContext configurationContext = webApplicationContext.getBean("nifiWebConfigurationContext", NiFiWebConfigurationContext.class);
-
+                    //
                     for (final WebAppContext customUiContext : componentUiExtensionWebContexts) {
                         // set the NiFi context in each custom ui servlet context
                         final ServletContext customUiServletContext = customUiContext.getServletHandler().getServletContext();
@@ -837,7 +837,7 @@ public class JettyServer implements NiFiServer {
             // successfully respond to the requests. to resolve this, flow loading was moved to here
             // (after the wars have been successfully deployed) when this nifi instance is a node
             // in a cluster
-            if (props.isNode()) {
+            if (props.isNode()) { //若是从节点
 
                 FlowService flowService = null;
                 try {
@@ -846,7 +846,7 @@ public class JettyServer implements NiFiServer {
 
                     ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(webApiContext.getServletContext());
                     flowService = ctx.getBean("flowService", FlowService.class);
-
+                    //上一行是org.apache.nifi.spring.StandardFlowServiceFactoryBean
                     // start and load the flow
                     flowService.start();
                     flowService.load(null);

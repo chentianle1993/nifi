@@ -24,7 +24,7 @@ public abstract class AbstractProcessor extends AbstractSessionFactoryProcessor 
     public final void onTrigger(final ProcessContext context, final ProcessSessionFactory sessionFactory) throws ProcessException {
         final ProcessSession session = sessionFactory.createSession();
         try {
-            onTrigger(context, session);
+            onTrigger(context, session);//调用子类的实例方法
             session.commit();
         } catch (final Throwable t) {
             getLogger().error("{} failed to process due to {}; rolling back session", new Object[]{this, t});

@@ -124,7 +124,6 @@ public class RunNiFi {
     private final Condition startupCondition = lock.newCondition();
 
     private final File bootstrapConfigFile;
-
     // used for logging initial info; these will be logged to console by default when the app is started
     private final Logger cmdLogger = LoggerFactory.getLogger("org.apache.nifi.bootstrap.Command");
     // used for logging all info. These by default will be written to the log file
@@ -172,6 +171,7 @@ public class RunNiFi {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
         if (args.length < 1 || args.length > 3) {
             printUsage();
             return;
@@ -763,7 +763,7 @@ public class RunNiFi {
 
             logger.debug("Sending SHUTDOWN Command to port {}", port);
             final OutputStream out = socket.getOutputStream();
-            out.write((SHUTDOWN_CMD + " " + secretKey + "\n").getBytes(StandardCharsets.UTF_8));
+            out.write((SHUTDOWN_CMD + " " + secretKey + "\n").getBytes(StandardCharsets.UTF_8));//发送shutdown命令
             out.flush();
             socket.shutdownOutput();
 
@@ -872,7 +872,7 @@ public class RunNiFi {
         logger.debug("Children of PID {}: {}", new Object[]{pid, children});
 
         for (final String childPid : children) {
-            killProcessTree(childPid, logger);
+            killProcessTree(childPid, logger);//递归本身
         }
 
         Runtime.getRuntime().exec(new String[]{"kill", "-9", pid});
@@ -903,18 +903,18 @@ public class RunNiFi {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void start() throws IOException, InterruptedException {
-        final Integer port = getCurrentPort(cmdLogger);
+        final Integer port = getCurrentPort(cmdLogger);// 获取当前运行的port
         if (port != null) {
             cmdLogger.info("Apache NiFi is already running, listening to Bootstrap on port " + port);
             return;
         }
 
-        final File prevLockFile = getLockFile(cmdLogger);
+        final File prevLockFile = getLockFile(cmdLogger);// run/nifi.lock文件干嘛用的
         if (prevLockFile.exists() && !prevLockFile.delete()) {
             cmdLogger.warn("Failed to delete previous lock file {}; this file should be cleaned up manually", prevLockFile);
         }
 
-        final ProcessBuilder builder = new ProcessBuilder();
+        final ProcessBuilder builder = new ProcessBuilder();//创建操作系统进程
 
         if (!bootstrapConfigFile.exists()) {
             throw new FileNotFoundException(bootstrapConfigFile.getAbsolutePath());
@@ -986,7 +986,7 @@ public class RunNiFi {
             throw new RuntimeException("Could not find conf directory at " + confDir.getAbsolutePath());
         }
 
-        final List<String> cpFiles = new ArrayList<>(confFiles.length + libFiles.length);
+        final List<String> cpFiles = new ArrayList<>(confFiles.length + libFiles.length);//class path?
         cpFiles.add(confDir.getAbsolutePath());
         for (final File file : libFiles) {
             cpFiles.add(file.getAbsolutePath());

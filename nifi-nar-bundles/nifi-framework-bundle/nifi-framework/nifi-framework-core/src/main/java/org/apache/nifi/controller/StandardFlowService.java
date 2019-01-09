@@ -147,7 +147,7 @@ public class StandardFlowService implements FlowService, ProtocolHandler {
     private static final String CONNECTION_EXCEPTION_MSG_PREFIX = "Failed to connect node to cluster because ";
     private static final Logger logger = LoggerFactory.getLogger(StandardFlowService.class);
 
-    public static StandardFlowService createStandaloneInstance(
+    public static StandardFlowService createStandaloneInstance(//单机模式
             final FlowController controller,
             final NiFiProperties nifiProperties,
             final StringEncryptor encryptor,
@@ -157,7 +157,7 @@ public class StandardFlowService implements FlowService, ProtocolHandler {
         return new StandardFlowService(controller, nifiProperties, null, encryptor, false, null, revisionManager, authorizer);
     }
 
-    public static StandardFlowService createClusteredInstance(
+    public static StandardFlowService createClusteredInstance(//集群模式
             final FlowController controller,
             final NiFiProperties nifiProperties,
             final NodeProtocolSenderListener senderListener,
@@ -297,7 +297,7 @@ public class StandardFlowService implements FlowService, ProtocolHandler {
             running.set(true);
 
             final ScheduledExecutorService newExecutor = new FlowEngine(2, "Flow Service Tasks");
-            newExecutor.scheduleWithFixedDelay(new SaveReportingTask(), 0L, 500L, TimeUnit.MILLISECONDS);
+            newExecutor.scheduleWithFixedDelay(new SaveReportingTask(), 0L, 500L, TimeUnit.MILLISECONDS);//runnable对象
             this.executor.set(newExecutor);
 
             if (configuredForClustering) {
@@ -439,7 +439,7 @@ public class StandardFlowService implements FlowService, ProtocolHandler {
 
     @Override
     public void load(final DataFlow dataFlow) throws IOException, FlowSerializationException, FlowSynchronizationException, UninheritableFlowException, MissingBundleException {
-        if (configuredForClustering) {
+        if (configuredForClustering) {//集群模式，530行开始为单机模式
             // Create the initial flow from disk if it exists, or from serializing the empty root group in flow controller
             final DataFlow initialFlow = (dataFlow == null) ? createDataFlow() : dataFlow;
             if (logger.isTraceEnabled()) {
@@ -527,12 +527,12 @@ public class StandardFlowService implements FlowService, ProtocolHandler {
             } finally {
                 writeLock.unlock();
             }
-        } else {
+        } else {//单机模式
             writeLock.lock();
             try {
                 // operating in standalone mode, so load proposed flow and initialize the controller
                 loadFromBytes(dataFlow, true);
-                initializeController();
+                initializeController();//启动processor
                 dao.save(controller, true);
             } finally {
                 writeLock.unlock();
@@ -704,7 +704,7 @@ public class StandardFlowService implements FlowService, ProtocolHandler {
 
         if (proposedFlow == null) {
             final ByteArrayOutputStream flowOnDisk = new ByteArrayOutputStream();
-            copyCurrentFlow(flowOnDisk);
+            copyCurrentFlow(flowOnDisk);//备份上一次的flow.xml.gz?
             flowBytes = flowOnDisk.toByteArray();
             authorizerFingerprint = getAuthorizerFingerprint();
             missingComponents = new HashSet<>();

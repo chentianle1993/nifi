@@ -58,9 +58,9 @@ public final class FlowEngine extends ScheduledThreadPoolExecutor {
             public Thread newThread(final Runnable r) {
                 final Thread t = defaultThreadFactory.newThread(r);
                 if (daemon) {
-                    t.setDaemon(true);
+                    t.setDaemon(true);//将该线程标记为守护线程或用户线程。当正在运行的线程都是守护线程时，Java 虚拟机退出。
                 }
-                t.setName(threadNamePrefix + " Thread-" + threadIndex.incrementAndGet());
+                t.setName(threadNamePrefix + " Thread-" + threadIndex.incrementAndGet());//将线程名设置为threadNamePrefix 1,2,3...
                 return t;
             }
         });

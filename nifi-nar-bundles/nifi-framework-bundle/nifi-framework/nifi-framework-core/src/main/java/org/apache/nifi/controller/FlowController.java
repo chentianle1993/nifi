@@ -325,7 +325,7 @@ public class FlowController implements EventAccess, ControllerServiceProvider, R
     private final Boolean isSiteToSiteSecure;
 
     private final AtomicReference<ProcessGroup> rootGroupRef = new AtomicReference<>();
-    private final List<Connectable> startConnectablesAfterInitialization;
+    private final List<Connectable> startConnectablesAfterInitialization;//好像是正在运行的processor
     private final List<RemoteGroupPort> startRemoteGroupPortsAfterInitialization;
     private final LeaderElectionManager leaderElectionManager;
     private final ClusterCoordinator clusterCoordinator;
@@ -455,7 +455,7 @@ public class FlowController implements EventAccess, ControllerServiceProvider, R
             final HeartbeatMonitor heartbeatMonitor,
             final LeaderElectionManager leaderElectionManager,
             final VariableRegistry variableRegistry) {
-
+        //构造函数
         maxTimerDrivenThreads = new AtomicInteger(10);
         maxEventDrivenThreads = new AtomicInteger(5);
 
@@ -740,7 +740,7 @@ public class FlowController implements EventAccess, ControllerServiceProvider, R
 
             notifyComponentsConfigurationRestored();
 
-            timerDrivenEngineRef.get().scheduleWithFixedDelay(new Runnable() {
+            timerDrivenEngineRef.get().scheduleWithFixedDelay(new Runnable() {//定时更新RemoteProcessGroup
                 @Override
                 public void run() {
                     try {
@@ -2992,9 +2992,9 @@ public class FlowController implements EventAccess, ControllerServiceProvider, R
         writeLock.lock();
         try {
             if (initialized.get()) {
-                group.startProcessor(node);
+                group.startProcessor(node);//web ui 启动后启动processor
             } else {
-                startConnectablesAfterInitialization.add(node);
+                startConnectablesAfterInitialization.add(node);//web ui 启动前第一次启动processor
             }
         } finally {
             writeLock.unlock();

@@ -39,10 +39,10 @@ public class ThreadPoolRequestReplicatorFactoryBean implements FactoryBean<Threa
 
     @Override
     public ThreadPoolRequestReplicator getObject() throws Exception {
-        if (replicator == null && nifiProperties.isNode()) {
-            final EventReporter eventReporter = applicationContext.getBean("eventReporter", EventReporter.class);
-            final ClusterCoordinator clusterCoordinator = applicationContext.getBean("clusterCoordinator", ClusterCoordinator.class);
-            final RequestCompletionCallback requestCompletionCallback = applicationContext.getBean("clusterCoordinator", RequestCompletionCallback.class);
+        if (replicator == null && nifiProperties.isNode()) {//仅从节点
+            final EventReporter eventReporter = applicationContext.getBean("eventReporter", EventReporter.class);//StandardEventReporter
+            final ClusterCoordinator clusterCoordinator = applicationContext.getBean("clusterCoordinator", ClusterCoordinator.class);//NodeClusterCoordinatorFactoryBean
+            final RequestCompletionCallback requestCompletionCallback = applicationContext.getBean("clusterCoordinator", RequestCompletionCallback.class);//NodeClusterCoordinatorFactoryBean
 
             final int corePoolSize = nifiProperties.getClusterNodeProtocolCorePoolSize();
             final int maxPoolSize = nifiProperties.getClusterNodeProtocolMaxPoolSize();

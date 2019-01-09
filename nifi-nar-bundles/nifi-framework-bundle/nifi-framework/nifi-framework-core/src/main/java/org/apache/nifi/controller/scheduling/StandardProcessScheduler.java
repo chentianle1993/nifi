@@ -323,7 +323,7 @@ public final class StandardProcessScheduler implements ProcessScheduler {
         };
 
         LOG.info("Starting {}", procNode);
-        procNode.start(this.componentLifeCycleThreadPool, this.administrativeYieldMillis, processContext, callback);
+        procNode.start(this.componentLifeCycleThreadPool, this.administrativeYieldMillis, processContext, callback);//启动processor
         return future;
     }
 

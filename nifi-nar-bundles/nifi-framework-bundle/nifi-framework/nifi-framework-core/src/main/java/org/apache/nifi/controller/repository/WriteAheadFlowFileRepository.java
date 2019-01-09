@@ -414,7 +414,7 @@ public class WriteAheadFlowFileRepository implements FlowFileRepository, SyncLis
             logger.warn("On recovery, found {} FlowFiles whose queue no longer exists. These FlowFiles will be dropped.", numFlowFilesMissingQueue);
         }
 
-        final Runnable checkpointRunnable = new Runnable() {
+        final Runnable checkpointRunnable = new Runnable() {//checkpoint
             @Override
             public void run() {
                 try {

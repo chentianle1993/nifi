@@ -50,11 +50,11 @@ public class ApplicationStartupContextListener implements ServletContextListener
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         final ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(sce.getServletContext());
-        final NiFiProperties properties = ctx.getBean("nifiProperties", NiFiProperties.class);
+        final NiFiProperties properties = ctx.getBean("nifiProperties", NiFiProperties.class);//NiFiPropertiesLoader.loadDefaultWithKeyFromBootstrap()
         try {
-            flowService = ctx.getBean("flowService", FlowService.class);
-            flowController = ctx.getBean("flowController", FlowController.class);
-            requestReplicator = ctx.getBean("requestReplicator", RequestReplicator.class);
+            flowService = ctx.getBean("flowService", FlowService.class);//StandardFlowServiceFactoryBean.getObject()
+            flowController = ctx.getBean("flowController", FlowController.class);//FlowControllerFactoryBean.getObject()
+            requestReplicator = ctx.getBean("requestReplicator", RequestReplicator.class);//ThreadPoolRequestReplicatorFactoryBean.getObject()
 
             // start and load the flow if we're not clustered (clustered flow loading should
             // happen once the application (wars) is fully loaded and initialized). non clustered
@@ -64,7 +64,7 @@ public class ApplicationStartupContextListener implements ServletContextListener
             // required with a clustered node, users are able to make web requests before the flow
             // is loaded (and the flow controller is initialized) which shouldn't be allowed. moving
             // the flow loading here when not clustered resolves this.
-            if (!properties.isNode()) {
+            if (!properties.isNode()) {//启动主节点，从节点由主节点启动
                 logger.info("Starting Flow Controller...");
 
                 // start and load the flow

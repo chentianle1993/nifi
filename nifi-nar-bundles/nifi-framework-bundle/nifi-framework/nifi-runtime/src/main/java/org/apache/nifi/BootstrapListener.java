@@ -66,16 +66,16 @@ public class BootstrapListener {
     public void start() throws IOException {
         logger.debug("Starting Bootstrap Listener to communicate with Bootstrap Port {}", bootstrapPort);
 
-        serverSocket = new ServerSocket();
+        serverSocket = new ServerSocket();//服务器socket，参数在下一行
         serverSocket.bind(new InetSocketAddress("localhost", 0));
         serverSocket.setSoTimeout(2000);
 
         final int localPort = serverSocket.getLocalPort();
         logger.info("Started Bootstrap Listener, Listening for incoming requests on port {}", localPort);
 
-        listener = new Listener(serverSocket);
+        listener = new Listener(serverSocket);//构造runnable对象，重写run()
         final Thread listenThread = new Thread(listener);
-        listenThread.setDaemon(true);
+        listenThread.setDaemon(true);//若其他线程结束则退出jvm
         listenThread.setName("Listen to Bootstrap");
         listenThread.start();
 
@@ -94,7 +94,7 @@ public class BootstrapListener {
         sendCommand("STARTED", new String[]{ String.valueOf(status) });
     }
 
-    private void sendCommand(final String command, final String[] args) throws IOException {
+    private void sendCommand(final String command, final String[] args) throws IOException {//客户端程序
         try (final Socket socket = new Socket()) {
             socket.setSoTimeout(60000);
             socket.connect(new InetSocketAddress("localhost", bootstrapPort));
@@ -149,7 +149,7 @@ public class BootstrapListener {
         }
 
         @Override
-        public void run() {
+        public void run() {//thread.start()执行实质
             while (!stopped) {
                 try {
                     final Socket socket;
