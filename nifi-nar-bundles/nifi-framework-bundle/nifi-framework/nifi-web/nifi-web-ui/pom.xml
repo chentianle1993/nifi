@@ -378,7 +378,7 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>--cache-min Infinity install</arguments>
+                            <arguments>--cache-min --strict-ssl false Infinity install</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>
