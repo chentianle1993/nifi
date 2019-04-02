@@ -17,6 +17,8 @@
 package org.apache.nifi.flowfile;
 
 import java.util.Map;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 /**
  * <p>
@@ -107,6 +109,18 @@ public interface FlowFile extends Comparable<FlowFile> {
      * @return an unmodifiable map of the flow file attributes
      */
     Map<String, String> getAttributes();
+
+    /**
+     * @author chentianle1993.github.com
+     * @return spark dataframe
+     */
+    Dataset<Row> getSparkDataFrame();
+
+    /**
+     * @author chentianle1993.github.com
+     * @return spark dataframe
+     */
+    void setSparkDataFrame(Dataset<Row> sparkDataFrame);
 
     public static class KeyValidator {
 

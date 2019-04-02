@@ -32,6 +32,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.nifi.controller.repository.claim.ContentClaim;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 /**
  * <p>
@@ -55,6 +57,11 @@ public final class StandardFlowFileRecord implements FlowFile, FlowFileRecord {
     private final long lastQueueDate;
     private final long queueDateIndex;
 
+    /**
+     * @author chentianle1993.github.com
+     */
+    private Dataset<Row> sparkDataFrame;
+
     private StandardFlowFileRecord(final Builder builder) {
         this.id = builder.bId;
         this.attributes = builder.bAttributes == null ? Collections.emptyMap() : builder.bAttributes;
@@ -67,6 +74,7 @@ public final class StandardFlowFileRecord implements FlowFile, FlowFileRecord {
         this.claimOffset = builder.bClaimOffset;
         this.lastQueueDate = builder.bLastQueueDate;
         this.queueDateIndex = builder.bQueueDateIndex;
+        this.sparkDataFrame = null;
     }
 
     @Override
@@ -107,6 +115,25 @@ public final class StandardFlowFileRecord implements FlowFile, FlowFileRecord {
     @Override
     public Map<String, String> getAttributes() {
         return Collections.unmodifiableMap(this.attributes);
+    }
+
+    /**
+     * @return spark dataframe
+     * @author chentianle1993.github.com
+     */
+    @Override
+    public Dataset<Row> getSparkDataFrame() {
+        return sparkDataFrame;
+    }
+
+    /**
+     * @param sparkDataFrame
+     * @return spark dataframe
+     * @author chentianle1993.github.com
+     */
+    @Override
+    public void setSparkDataFrame(Dataset<Row> sparkDataFrame) {
+        this.sparkDataFrame = sparkDataFrame;
     }
 
     @Override
